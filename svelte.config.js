@@ -18,6 +18,9 @@ const adapter = isStaticBuild
 const config = {
   kit: {
     adapter,
+    paths: {
+      base: isStaticBuild ? process.env.BASE_PATH ?? '' : '',
+    },
   },
   preprocess: vitePreprocess(),
 };

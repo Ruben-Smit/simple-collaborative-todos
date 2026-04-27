@@ -1,4 +1,5 @@
 import { browser } from '$app/environment';
+import { base } from '$app/paths';
 import { atom, computed, type ReadableAtom, type WritableAtom } from 'nanostores';
 import cycle from 'cycle';
 import { Todo } from '../interfaces/Todo';
@@ -63,7 +64,7 @@ export const viewTodo = async (
   } else {
     serializedTodo.set(serializeTodo(todo));
   }
-  browser && window.history.replaceState(null, '', window.location.origin);
+  browser && window.history.replaceState(null, '', `${window.location.origin}${base}/`);
 };
 
 const getInstancedTodo = (id: string): Todo => {

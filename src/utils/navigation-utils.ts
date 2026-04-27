@@ -1,8 +1,9 @@
+import { base } from '$app/paths';
 import { Todo } from '../interfaces/Todo';
 import { serializeTodo } from '../stores/todo';
 
 const generateUrl = (todo: Todo) => {
-  return `${location.origin}/share/${encodeURIComponent(btoa(serializeTodo(todo)))}`;
+  return `${location.origin}${base}/share/${encodeURIComponent(btoa(serializeTodo(todo)))}`;
 };
 
 export const shareLink = (todo: Todo) => {
@@ -18,7 +19,7 @@ export const shareLink = (todo: Todo) => {
 };
 
 const shareCollaborateLink = (todoId: string) => {
-  const url = `${window.location.origin}/collaborate/${todoId}`;
+  const url = `${window.location.origin}${base}/collaborate/${todoId}`;
   const shareObject = {
     title: 'Collaborate on my to-do list',
     url,
