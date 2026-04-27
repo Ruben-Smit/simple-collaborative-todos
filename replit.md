@@ -21,7 +21,7 @@ via Drizzle and live-updated through Server-Sent Events (sveltekit-sse).
 Switched on `BUILD_MODE`:
 
 - **node** (default) — `npm run build` + `node build`. Full server, DB, SSE.
-- **static** — `./scripts/build-static.sh` (or `BUILD_MODE=static npx vite build`).
+- **static** — `npm run build:static` (sets `BUILD_MODE=static` for `vite build`).
   Uses `@sveltejs/adapter-static` with `fallback: 'index.html'`. Server-only
   features are gated behind `IS_STATIC_BUILD` (`src/lib/static-mode.ts`,
   populated from the Vite-injected `VITE_STATIC_BUILD` define).

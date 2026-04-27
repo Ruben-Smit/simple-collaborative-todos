@@ -47,7 +47,7 @@ collaboration (`/collaborate/*`, `/api/*` and SSE) is gracefully disabled
 because there is no server to back it.
 
 ```sh
-./scripts/build-static.sh   # or: BUILD_MODE=static npx vite build
+npm run build:static
 # Output is written to ./build — point nginx (or any static host) at it.
 ```
 
