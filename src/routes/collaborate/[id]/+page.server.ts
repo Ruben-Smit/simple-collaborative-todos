@@ -10,7 +10,6 @@ export async function load({ params }) {
     if (params.id) {
       todo = await getTodoById(params.id);
     }
-    console.log('Retrieved todo: ', todo);
     if (!todo) error(404, { message: 'To-do not found' });
   } catch (e) {
     console.error(e);

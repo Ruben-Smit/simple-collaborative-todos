@@ -4,6 +4,7 @@ import cycle from 'cycle';
 import { Todo } from '../interfaces/Todo';
 import { storeTodo } from '../utils/storage-utils';
 import { initSSE } from '../utils/sse-utils';
+import { IS_STATIC_BUILD } from '../lib/static-mode';
 
 export const serializeTodo = (todo: Todo | Record<string, any>) => {
   return JSON.stringify(cycle.decycle(todo));
@@ -34,12 +35,14 @@ const onUpdateReceived = (todoString: string) => {
   }
 };
 
-// Re-initialize SSE when the publishId changes
-todoAtom.listen((todo) => initSSE(todo?.publishId, onUpdateReceived));
+// Re-initialize SSE when the publishId changes (server mode only)
+if (!IS_STATIC_BUILD) {
+  todoAtom.listen((todo) => initSSE(todo?.publishId, onUpdateReceived));
+}
 
 export const updateTodo = async (todo: Todo, publishUpdate: boolean = true) => {
   storeTodo(todo);
-  if (publishUpdate && todo.publishId && todo.isInstance) {
+  if (!IS_STATIC_BUILD && publishUpdate && todo.publishId && todo.isInstance) {
     await publishTodo(todo.getApicalParent() as Todo);
   }
   viewTodo(todo, publishUpdate);
@@ -51,7 +54,7 @@ export const viewTodo = async (
 ) => {
   let todo = todoObject;
   todo =
-    todoObject.publishId && fetchLatest
+    !IS_STATIC_BUILD && todoObject.publishId && fetchLatest
       ? (await fetchTodoById(todoObject.publishId))?.findDescendantById(todo.id) ?? todo
       : todo;
   todo = !todo.isInstance ? getInstancedTodo(todo.id) : todo;
@@ -70,7 +73,7 @@ const getInstancedTodo = (id: string): Todo => {
 };
 
 export const publishTodo = async (todo: Todo): Promise<string> => {
-  if (!browser) return;
+  if (!browser || IS_STATIC_BUILD) return;
   const id = await (
     await fetch('/api/todo', {
       method: 'POST',
@@ -84,7 +87,7 @@ export const publishTodo = async (todo: Todo): Promise<string> => {
 };
 
 const fetchTodoById = async (id: string): Promise<Todo> => {
-  if (!browser) return;
+  if (!browser || IS_STATIC_BUILD) return;
   const response = await fetch(`/api/todo/${id}`, {
     method: 'GET',
     headers: {

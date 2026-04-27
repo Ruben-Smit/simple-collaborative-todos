@@ -8,4 +8,5 @@ export const todoTable = sqliteTable('todos', {
   status: text('status').notNull(),
   title: text('title'),
   index: integer('index'),
+  tags: text('tags'),
 });

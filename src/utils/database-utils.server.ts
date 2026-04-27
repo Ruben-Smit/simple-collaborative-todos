@@ -4,12 +4,30 @@ import { Todo } from '../interfaces/Todo';
 import { todoTable } from '../db/schema.server';
 import { db } from '../db/init.server';
 
+const decodeTags = (raw: unknown): string[] => {
+  if (!raw) return [];
+  if (Array.isArray(raw)) return raw.filter((t) => typeof t === 'string');
+  if (typeof raw !== 'string') return [];
+  try {
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? parsed.filter((t) => typeof t === 'string') : [];
+  } catch {
+    return [];
+  }
+};
+
+const encodeTags = (tags: unknown): string | null => {
+  if (!Array.isArray(tags) || tags.length === 0) return null;
+  return JSON.stringify(tags.filter((t) => typeof t === 'string'));
+};
+
 export const getTodoById = async (id: string) => {
   const todoEntry: Record<string, any> = (
     await db.select().from(todoTable).where(eq(todoTable.id, id))
   )?.[0];
 
   if (!todoEntry) return null;
+  todoEntry.tags = decodeTags(todoEntry.tags);
   todoEntry.children = await getChildTodos(todoEntry);
   console.log('Got: ', todoEntry);
   return Todo.fromObject(todoEntry);
@@ -26,6 +44,7 @@ const getChildTodos = async (parent: Todo | Record<string, any>) => {
   await Promise.all(
     childEntries.map(async (child, index) => {
       const todoChild: Record<string, any> = { parent, ...child };
+      todoChild.tags = decodeTags(todoChild.tags);
       todoChild.children = await getChildTodos(todoChild);
       output[index] = todoChild;
     })
@@ -40,6 +59,7 @@ export const saveTodo = async (todo: Todo, index: number = null) => {
     ...pick(todo, Object.keys(todoTable)),
     parentId: parent?.id,
     index,
+    tags: encodeTags(todo.tags),
   };
   console.log('Saving: ', entry);
   const result = await db

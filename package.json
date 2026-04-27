@@ -37,6 +37,7 @@
     "vite": "^5.2.9"
   },
   "dependencies": {
+    "@sveltejs/adapter-static": "^3.0.10",
     "@sveltejs/kit": "^2.0.0",
     "better-sqlite3": "^9.4.3",
     "cycle": "^1.0.3",

@@ -1,7 +1,7 @@
 import { error } from '@sveltejs/kit';
 import { deserializeTodo } from '../../../stores/todo';
-/** @type {import('./$types').PageServerLoad} */
 
+/** @type {import('./$types').PageLoad} */
 export const load = ({ params }) => {
   let todo;
   try {
@@ -9,13 +9,10 @@ export const load = ({ params }) => {
     if (todoString) {
       todo = deserializeTodo(atob(decodeURIComponent(todoString)));
     }
-    console.log('Loaded todo: ', todo);
   } catch (e) {
     console.error(e);
     error(400, { message: 'Incorrect URL' });
   }
 
-  return {
-    todo,
-  };
+  return { todo };
 };

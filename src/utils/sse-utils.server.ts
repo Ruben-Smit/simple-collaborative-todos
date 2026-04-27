@@ -1,19 +1,24 @@
-import { EventEmitter } from 'events';
 import type { Todo } from '../interfaces/Todo';
 
-const eventEmitter = new EventEmitter();
+type Subscriber = (todo: Todo) => void;
+
+const subscribers = new Set<Subscriber>();
 
 export const sendToClients = (todo: Todo) => {
-  eventEmitter.emit('sendToClients', todo);
+  for (const subscriber of subscribers) {
+    try {
+      subscriber(todo);
+    } catch (e) {
+      console.error('SSE subscriber error:', e);
+    }
+  }
 };
 
-export const onClientUpdate = (callback: (todo: Todo) => void) => {
-  eventEmitter.on('sendToClients', (todo) => {
-    callback(todo);
-    eventEmitter.emit('notifyUpdateSent');
-  });
+export const subscribeToUpdates = (callback: Subscriber): (() => void) => {
+  subscribers.add(callback);
+  return () => {
+    subscribers.delete(callback);
+  };
 };
 
-export const onUpdateSent = (callback: (value: unknown) => void, once = false) => {
-  eventEmitter[once ? 'once' : 'on']('notifyUpdateSent', callback);
-};
+export const getSubscriberCount = () => subscribers.size;

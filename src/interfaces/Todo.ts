@@ -4,6 +4,7 @@ export class Todo {
   public children: Todo[] = [];
   public status: 'unchecked' | 'checked' = 'unchecked';
   public title: string = '';
+  public tags: string[] = [];
   private _publishId?: string;
 
   get publishId(): string {
@@ -52,6 +53,7 @@ export class Todo {
 
   public static fromObject(object: Record<string, any>): Todo {
     const apicalIntance = Object.assign(new Todo(), Todo.getApicalParent(object));
+    apicalIntance.tags = Array.isArray(apicalIntance.tags) ? [...apicalIntance.tags] : [];
     apicalIntance.children = Todo.convertChildrenToInstances(apicalIntance.children, apicalIntance);
     return apicalIntance.findDescendantById(object.id);
   }
@@ -62,7 +64,8 @@ export class Todo {
         ...child,
         parent,
       });
-      childInstance.children = Todo.convertChildrenToInstances(child.children, childInstance);
+      childInstance.tags = Array.isArray(child.tags) ? [...child.tags] : [];
+      childInstance.children = Todo.convertChildrenToInstances(child.children ?? [], childInstance);
       return childInstance;
     });
   }
