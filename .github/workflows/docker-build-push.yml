@@ -28,7 +28,7 @@ jobs:
 
       - name: Extract metadata for SSR Image
         id: meta-ssr
-        uses: docker/metadata-action@v5
+        uses: docker/metadata-action@v6
         with:
           images: ghcr.io/${{ github.repository }}
           flavor: |
@@ -49,7 +49,7 @@ jobs:
 
       - name: Extract metadata for Static Image
         id: meta-static
-        uses: docker/metadata-action@v5
+        uses: docker/metadata-action@v6
         with:
           images: ghcr.io/${{ github.repository }}
           flavor: |
