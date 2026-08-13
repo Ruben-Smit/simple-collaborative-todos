@@ -9,4 +9,4 @@ bucket = ".svelte-kit/cloudflare"
 [[d1_databases]]
 binding = "DB"
 database_name = "simple-collaborative-todos-db"
-database_id = "simple-collaborative-todos-db-id"
+database_id = "5be89854-57d0-4609-82bf-0387ba2809d4"
