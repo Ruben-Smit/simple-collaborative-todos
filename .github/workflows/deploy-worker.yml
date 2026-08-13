@@ -28,7 +28,7 @@ jobs:
         run: npm install -g wrangler@latest
 
       - name: Deploy
-        uses: cloudflare/wrangler-action@v3.14.1
+        uses: cloudflare/wrangler-action@v4.0.0
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: 2fafe81d9988a10e4e717f9c02b6d8a6
