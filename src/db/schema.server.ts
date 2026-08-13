@@ -1,12 +1,13 @@
-import { text, integer, sqliteTable, type AnySQLiteColumn } from 'drizzle-orm/sqlite-core';
+import { sqliteTable, text, integer } from 'drizzle-orm/sqlite-core';
+import type { InferSelectModel, InferInsertModel } from 'drizzle-orm';
 
 export const todoTable = sqliteTable('todos', {
-  id: text('id').primaryKey().unique().notNull(),
-  parentId: text('parentId').references((): AnySQLiteColumn => todoTable.id, {
-    onDelete: 'cascade',
-  }),
-  status: text('status').notNull(),
+  id: text('id').primaryKey().notNull(),
+  parentId: text('parentId'),
+  status: text('status').notNull().default('unchecked'),
   title: text('title'),
   index: integer('index'),
-  tags: text('tags'),
 });
+
+export type TodoRow = InferSelectModel<typeof todoTable>;
+export type NewTodoRow = InferInsertModel<typeof todoTable>;

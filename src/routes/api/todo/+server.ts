@@ -5,9 +5,9 @@ import type { Todo } from '../../../interfaces/Todo';
 import { sendToClients } from '../../../utils/sse-utils.server';
 
 /** @type {import('./$types').RequestHandler} */
-export async function POST({ request }) {
+export async function POST({ request, platform }) {
   const todo: Todo = cycle.retrocycle(await request.json());
-  await saveTodo(todo);
+  await saveTodo(todo, null, platform);
   sendToClients(todo);
   return text(todo.id);
 }

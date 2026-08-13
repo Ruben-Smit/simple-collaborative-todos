@@ -1,29 +1,53 @@
-import { source } from 'sveltekit-sse';
+import { browser } from '$app/environment';
 import { IS_STATIC_BUILD } from '../lib/static-mode';
 
-let todoId: string = null;
-let subscription: ReturnType<typeof source> = null;
+let currentPublishId: string | null = null;
+let eventSource: EventSource | null = null;
 
-export const initSSE = (publishId: string, callback: (todoString: string) => void) => {
-  if (IS_STATIC_BUILD) return;
-  if (todoId === publishId) {
+export const closeSSE = () => {
+  if (eventSource) {
+    eventSource.close();
+    eventSource = null;
+  }
+  currentPublishId = null;
+};
+
+export const initSSE = (
+  publishId: string | null | undefined,
+  callback: (todoString: string) => void
+) => {
+  if (!browser || IS_STATIC_BUILD) return;
+
+  if (currentPublishId === publishId) {
     return;
   }
 
-  subscription?.close();
-  subscription = null;
-  todoId = null;
+  closeSSE();
 
   if (!publishId) return;
 
-  subscription = source('/api/events', {
-    options: {
-      headers: { 'todo-id': publishId },
-      timeout: undefined,
-    },
-  });
+  currentPublishId = publishId;
 
-  subscription.select('todoUpdate').subscribe(callback);
+  try {
+    const es = new EventSource(`/api/events?id=${encodeURIComponent(publishId)}`);
+    eventSource = es;
 
-  todoId = publishId;
+    es.addEventListener('todoUpdate', (event: MessageEvent) => {
+      if (event.data) {
+        callback(event.data);
+      }
+    });
+
+    es.onerror = () => {
+      if (es.readyState === EventSource.CLOSED) {
+        if (eventSource === es) {
+          eventSource = null;
+          currentPublishId = null;
+        }
+      }
+    };
+  } catch (err) {
+    console.error('Failed to initialize EventSource:', err);
+    closeSSE();
+  }
 };

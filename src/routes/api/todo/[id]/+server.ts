@@ -3,13 +3,12 @@ import cycle from 'cycle';
 import { getTodoById } from '../../../../utils/database-utils.server';
 import type { Todo } from '../../../../interfaces/Todo';
 
-export async function GET({ request, params, url }) {
+export async function GET({ params, platform }) {
   let todo: Todo;
   try {
     if (params.id) {
-      todo = await getTodoById(params.id);
+      todo = await getTodoById(params.id, platform);
     }
-    console.log('Retrieved todo: ', todo);
     if (!todo) error(404, { message: 'To-do not found' });
   } catch (e) {
     console.error(e);

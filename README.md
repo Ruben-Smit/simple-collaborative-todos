@@ -1,4 +1,4 @@
-# Simple collaborative todos
+# Simple Collaborative Todos
 
 Open the page and start creating to-dos, and share your to-dos with others.
 
@@ -6,71 +6,96 @@ The goal of this project is to create a simple website where you can keep your o
 
 **No authentication/log-in required!**
 
-Normally nothing will be stored on the server, everything will be stored in your browser or your shared link. Only when clicking the globe it will store the to-do online also. Then all changes will be updated live too. Note: everyone with your to-do link can update it.
+Normally nothing will be stored on the server; everything will be stored in your browser or your shared link (`/share/<encoded>`). Only when clicking the globe icon will it store the to-do online and generate a `/collaborate/<id>` link with live multi-user real-time updates.
 
-Feel free to create PR's if you have a nice idea, but please keep this project simple.
+---
 
-I don't want changes/improvements for this project to be hidden away from the public, so please keep your fork public too if you create any.
+## Deployment & Hosting
 
-# How to run as a Docker container
+### 1. Cloudflare Workers (Default)
 
-- Install Docker.
-- Run `docker compose -f docker-compose.dev.yml up --build` (or `npm run docker:dev` if you have Node installed).
-- Go to http://localhost:3000.
-- For instructions on how to use the app open the info page with the ⓘ button.
-
-# How to develop
-
-- Install Node and SQLite3.
-- Run `npm install`.
-- Run `npm start`.
-
-# Build modes
-
-The app can be built two ways:
-
-### Node server (default)
-
-For full functionality including live collaboration, server-side persistence
-and SSE updates.
+Built using `@sveltejs/adapter-cloudflare` and Cloudflare D1 database:
 
 ```sh
-npm run build      # outputs the @sveltejs/adapter-node bundle to ./build
-node build         # run it
+npm run build:cloudflare   # outputs worker bundle to .svelte-kit/cloudflare
+npx wrangler deploy       # deploys to Cloudflare
 ```
 
-### Static SPA (for nginx, GitHub Pages, etc.)
+### 2. Docker Containers (SSR and Static on GHCR)
 
-For a fully static bundle that can be hosted from any plain web server. The
-`/share/<encoded>` links and local-storage archive still work; live
-collaboration (`/collaborate/*`, `/api/*` and SSE) is gracefully disabled
-because there is no server to back it.
+Prebuilt container images are automatically published to GitHub Container Registry (`ghcr.io`):
+
+- **SSR Node Server**:
+
+  ```sh
+  docker run -p 3000:3000 -v $(pwd)/data:/data ghcr.io/<owner>/simple-collaborative-todos:latest
+  ```
+
+  Or locally: `npm run docker:dev`
+
+- **Static Nginx SPA**:
+  ```sh
+  docker run -p 80:80 ghcr.io/<owner>/simple-collaborative-todos:static
+  ```
+
+### 3. Static SPA (GitHub Pages, Nginx, Netlify, etc.)
+
+For a standalone static client-only app with zero backend required:
 
 ```sh
 npm run build:static
-# Output is written to ./build — point nginx (or any static host) at it.
+# Output is written to ./build
 ```
 
-A minimal nginx server block:
+A minimal Nginx configuration:
 
 ```nginx
 server {
   listen 80;
   root /var/www/simple-collaborative-todos/build;
   location / {
-    try_files $uri $uri/ /index.html;   # SPA fallback
+    try_files $uri $uri/ /index.html;
   }
 }
 ```
 
+---
+
+## Local Development
+
+1. Install Node.js (v20+ or v22 LTS recommended).
+2. Install dependencies:
+   ```sh
+   npm install
+   ```
+3. Start development server:
+   ```sh
+   npm run dev
+   ```
+4. Open http://localhost:5173.
+
+---
+
+## Available Scripts
+
+- `npm run dev`: Start local development server.
+- `npm run build`: Build for Cloudflare Workers.
+- `npm run build:cloudflare`: Build for Cloudflare Workers.
+- `npm run build:node`: Build for Node.js / Docker SSR.
+- `npm run build:static`: Build standalone static SPA.
+- `npm run check`: Run Svelte and TypeScript diagnostics.
+- `npm run lint`: Check code formatting with Prettier.
+- `npm run format`: Format codebase with Prettier.
+- `npm run docker:dev`: Launch local dev environment in Docker.
+
 # Future improvements in no particular order
 
-- ~Ability to edit to-dos~
-- ~Ability to remove to-dos~
+- ~~Ability to edit to-dos~~
+- ~~Ability to remove to-dos~~
 - Touch controls
-- ~Create server-less static "mode" to host this in Github pages, but that still works with shared links~
-- ~Keep to-dos in local storage and add ability to go through archive~
-- ~Create an archive button to "throw away" all to-dos currently in view and to start with a clean slate~
+- ~~Create server-less static "mode" to host this in Github pages, but that still works with shared links~~
+- ~~Keep to-dos in local storage and add ability to go through archive~~
+- ~~Create an archive button to "throw away" all to-dos currently in view and to start with a clean slate~~
 - Create import and export button
-- ~Add live collaboration and database persistence (+ change readme to reflect this)~
-- ~Add tags to to-dos~
+- ~~Add live collaboration and database persistence (+ change readme to reflect this)~~
+- ~~Add tags to to-dos~~

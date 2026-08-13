@@ -4,11 +4,11 @@ import { getTodoById } from '../../../utils/database-utils.server';
 import type { Todo } from '../../../interfaces/Todo';
 
 /** @type {import('./$types').PageServerLoad} */
-export async function load({ params }) {
+export async function load({ params, platform }) {
   let todo: Todo;
   try {
     if (params.id) {
-      todo = await getTodoById(params.id);
+      todo = await getTodoById(params.id, platform);
     }
     if (!todo) error(404, { message: 'To-do not found' });
   } catch (e) {

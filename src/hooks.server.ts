@@ -1,1 +1,2 @@
-import './db/migrate.server';
+// Server hooks
+export {};

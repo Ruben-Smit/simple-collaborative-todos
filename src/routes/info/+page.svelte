@@ -153,8 +153,8 @@
         />
       </StyledVectorGraphic>
     </StyledButton>
-    Publishes the current to-do list and all descending to-dos/todo-lists, parents will remain local
-    and need to be published explicitly.
+    Publishes the current to-do list and all descending to-dos/todo-lists, parents will remain local and
+    need to be published explicitly.
     <br />To share the published link it tries to use the browser's built-in sharing functionality,
     otherwise it just copies the link.
   </div>

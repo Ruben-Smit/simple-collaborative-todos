@@ -74,22 +74,6 @@
       updateTodo(todo, false);
     }
   };
-
-  const handleAddTag = (child: Record<string, any>) => {
-    const raw = typeof window !== 'undefined' ? window.prompt('Add a tag') : null;
-    if (raw === null) return;
-    const value = raw.trim();
-    if (!value) return;
-    const existing = Array.isArray(child.tags) ? child.tags : [];
-    if (existing.includes(value)) return;
-    child.tags = [...existing, value];
-    updateTodo(Todo.fromObject(todo));
-  };
-
-  const handleRemoveTag = (child: Record<string, any>, tag: string) => {
-    child.tags = (child.tags ?? []).filter((t: string) => t !== tag);
-    updateTodo(Todo.fromObject(todo));
-  };
 </script>
 
 <div class="flex flex-col gap-2">
@@ -206,48 +190,6 @@
         {/if}
       </div>
       <div class="flex items-center gap-1">
-        <div class="flex items-center flex-wrap gap-1">
-          {#each child.tags ?? [] as tag (tag)}
-            <button
-              type="button"
-              title={editMode ? `Remove tag "${tag}"` : tag}
-              on:click={() => editMode && handleRemoveTag(child, tag)}
-              class="inline-flex items-center h-6 pl-2 pr-2 text-xs leading-none rounded-full border border-gray-300 text-gray-600 bg-gray-50 hover:border-gray-400 dark:border-neutral-500 dark:text-gray-300 dark:bg-neutral-700 dark:hover:border-gray-400 {editMode
-                ? 'cursor-pointer'
-                : 'cursor-default'}"
-            >
-              {tag}
-            </button>
-          {/each}
-          <button
-            type="button"
-            name="add-tag"
-            aria-label="Add tag"
-            title="Add tag"
-            on:click={() => handleAddTag(child)}
-            class="inline-flex items-center justify-center w-8 h-6 rounded-r-full rounded-l-sm border border-gray-300 bg-white text-gray-500 hover:border-gray-400 focus:outline-none dark:bg-neutral-700 dark:border-neutral-500 dark:text-gray-300 dark:hover:border-gray-400"
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="1.5"
-              class="w-4 h-4"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                d="M9.568 3H5.25A2.25 2.25 0 0 0 3 5.25v4.318c0 .597.237 1.17.659 1.591l9.581 9.581c.699.699 1.78.872 2.607.33a18.095 18.095 0 0 0 5.223-5.223c.542-.827.369-1.908-.33-2.607L11.16 3.66A2.25 2.25 0 0 0 9.568 3Z"
-              />
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                d="M10 10h4M12 8v4"
-              />
-            </svg>
-          </button>
-        </div>
         {#if !editMode}
           <StyledButton
             name="view"

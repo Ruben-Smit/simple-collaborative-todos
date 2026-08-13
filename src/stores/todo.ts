@@ -15,11 +15,11 @@ export const deserializeTodo = (serializedTodo?: string) => {
   return serializedTodo && cycle.retrocycle(JSON.parse(serializedTodo));
 };
 
-const serializedTodo: WritableAtom<string> = atom();
+const serializedTodo: WritableAtom<string | undefined> = atom();
 
 const deserializedTodo: ReadableAtom<Todo | undefined> = computed(serializedTodo, deserializeTodo);
 
-const instancedTodo: WritableAtom<Todo | undefined> = atom(null);
+const instancedTodo: WritableAtom<Todo | undefined> = atom(undefined);
 
 export const todoAtom: ReadableAtom<Todo | undefined> = computed(
   [deserializedTodo, instancedTodo],
@@ -36,8 +36,8 @@ const onUpdateReceived = (todoString: string) => {
   }
 };
 
-// Re-initialize SSE when the publishId changes (server mode only)
-if (!IS_STATIC_BUILD) {
+// Re-initialize SSE when the publishId changes (browser and server mode only)
+if (!IS_STATIC_BUILD && browser) {
   todoAtom.listen((todo) => initSSE(todo?.publishId, onUpdateReceived));
 }
 
@@ -56,7 +56,7 @@ export const viewTodo = async (
   let todo = todoObject;
   todo =
     !IS_STATIC_BUILD && todoObject.publishId && fetchLatest
-      ? (await fetchTodoById(todoObject.publishId))?.findDescendantById(todo.id) ?? todo
+      ? ((await fetchTodoById(todoObject.publishId))?.findDescendantById(todo.id) ?? todo)
       : todo;
   todo = !todo.isInstance ? getInstancedTodo(todo.id) : todo;
   if (todo.isInstance) {
@@ -74,21 +74,23 @@ const getInstancedTodo = (id: string): Todo => {
 };
 
 export const publishTodo = async (todo: Todo): Promise<string> => {
-  if (!browser || IS_STATIC_BUILD) return;
-  const id = await (
-    await fetch('/api/todo', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(cycle.decycle(todo)),
-    })
-  ).text();
-  return id;
+  if (!browser || IS_STATIC_BUILD) return null;
+  const response = await fetch('/api/todo', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(cycle.decycle(todo)),
+  });
+  if (!response.ok) {
+    console.error('Failed to publish todo:', response.statusText);
+    return null;
+  }
+  return await response.text();
 };
 
 const fetchTodoById = async (id: string): Promise<Todo> => {
-  if (!browser || IS_STATIC_BUILD) return;
+  if (!browser || IS_STATIC_BUILD) return null;
   const response = await fetch(`/api/todo/${id}`, {
     method: 'GET',
     headers: {

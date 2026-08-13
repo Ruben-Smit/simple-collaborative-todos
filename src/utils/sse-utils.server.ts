@@ -2,10 +2,15 @@ import type { Todo } from '../interfaces/Todo';
 
 type Subscriber = (todo: Todo) => void;
 
-const subscribers = new Set<Subscriber>();
+// Map of todoId -> Set of subscriber callbacks
+const subscribersByTodoId = new Map<string, Set<Subscriber>>();
 
 export const sendToClients = (todo: Todo) => {
-  for (const subscriber of subscribers) {
+  if (!todo || !todo.id) return;
+  const todoSubscribers = subscribersByTodoId.get(todo.id);
+  if (!todoSubscribers || todoSubscribers.size === 0) return;
+
+  for (const subscriber of todoSubscribers) {
     try {
       subscriber(todo);
     } catch (e) {
@@ -14,11 +19,35 @@ export const sendToClients = (todo: Todo) => {
   }
 };
 
-export const subscribeToUpdates = (callback: Subscriber): (() => void) => {
+export const subscribeToUpdates = (todoId: string, callback: Subscriber): (() => void) => {
+  if (!todoId) return () => {};
+
+  let subscribers = subscribersByTodoId.get(todoId);
+  if (!subscribers) {
+    subscribers = new Set<Subscriber>();
+    subscribersByTodoId.set(todoId, subscribers);
+  }
+
   subscribers.add(callback);
+
   return () => {
-    subscribers.delete(callback);
+    const subs = subscribersByTodoId.get(todoId);
+    if (subs) {
+      subs.delete(callback);
+      if (subs.size === 0) {
+        subscribersByTodoId.delete(todoId);
+      }
+    }
   };
 };
 
-export const getSubscriberCount = () => subscribers.size;
+export const getSubscriberCount = (todoId?: string) => {
+  if (todoId) {
+    return subscribersByTodoId.get(todoId)?.size ?? 0;
+  }
+  let total = 0;
+  for (const subs of subscribersByTodoId.values()) {
+    total += subs.size;
+  }
+  return total;
+};
